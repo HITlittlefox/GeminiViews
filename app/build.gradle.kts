@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -7,6 +10,7 @@ android {
     namespace = "com.example.geminiviews"
     compileSdk = 35
 
+
     defaultConfig {
         applicationId = "com.example.geminiviews"
         minSdk = 24
@@ -15,8 +19,24 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
 
+        // 读取 local.properties 文件
+        val properties = Properties()
+        val localPropertiesFile = rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            properties.load(FileInputStream(localPropertiesFile))
+        }
+
+        // 从 properties 中获取 API_KEY
+        val apiKey = properties.getProperty("apiKey")
+            ?: System.getenv("apiKey") // 作为一个回退，也可以从环境变量获取
+
+        if (apiKey == null) {
+            throw GradleException("API_KEY not found. Please set it in local.properties or as an environment variable.")
+        }
+        buildConfigField("String", "apiKey", "\"$apiKey\"") // 生成 BuildConfig.apiKey 字段
+
+    }
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -35,6 +55,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 }
 
@@ -49,6 +70,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
+    implementation(libs.generativeai)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

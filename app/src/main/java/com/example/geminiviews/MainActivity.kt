@@ -1,5 +1,6 @@
 package com.example.geminiviews
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -29,6 +30,8 @@ class MainActivity : AppCompatActivity() {
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                 .setAction("Action", null)
                 .setAnchorView(R.id.fab).show()
+            val intent = Intent(this, GeminiViewImageTalk::class.java)
+            startActivity(intent)
         }
 
         val navHostFragment =

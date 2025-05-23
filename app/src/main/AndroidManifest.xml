@@ -25,6 +25,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".GeminiViewImageTalk"
+            android:theme="@style/Theme.GeminiViews.NoActionBar"></activity>
     </application>
 
 </manifest>

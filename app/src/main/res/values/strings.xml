@@ -1,4 +1,15 @@
 <resources>
+<!--    <string name="app_name">PrivateGemini</string>-->
+    <string name="baking_title">What can we bake today?</string>
+    <string name="prompt_placeholder">Enter your prompt here</string>
+    <string name="results_placeholder">Results will appear here</string>
+    <string name="label_prompt">Prompt</string>
+    <string name="action_go">Go</string>
+    <string name="image1_description">A delicious looking cupcake</string>
+    <string name="image2_description">A plate of freshly baked cookies</string>
+    <string name="image3_description">A beautiful birthday cake</string>
+
+
     <string name="app_name">GeminiViews</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
