@@ -30,7 +30,7 @@ class MainActivity : AppCompatActivity() {
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                 .setAction("Action", null)
                 .setAnchorView(R.id.fab).show()
-            val intent = Intent(this, GeminiViewImageTalk::class.java)
+            val intent = Intent(this, GeminiViewImageTalkActivity::class.java)
             startActivity(intent)
         }
 

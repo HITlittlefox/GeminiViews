@@ -27,7 +27,7 @@
         </activity>
 
         <activity
-            android:name=".GeminiViewImageTalk"
+            android:name=".GeminiViewImageTalkActivity"
             android:theme="@style/Theme.GeminiViews.NoActionBar"></activity>
     </application>
 

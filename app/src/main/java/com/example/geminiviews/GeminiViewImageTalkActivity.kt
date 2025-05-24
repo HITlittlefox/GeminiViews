@@ -22,7 +22,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.flow.collectLatest
 
-class GeminiViewImageTalk : AppCompatActivity() {
+class GeminiViewImageTalkActivity : AppCompatActivity() {
 
     private lateinit var bakingViewModel: BakingViewModel
     private lateinit var promptEditText: EditText
@@ -70,7 +70,7 @@ class GeminiViewImageTalk : AppCompatActivity() {
             selectedImageIndex = position
             // 当图片被选中时，通知Adapter刷新以更新边框
             imageRecyclerView.adapter?.notifyDataSetChanged()
-            Toast.makeText(this@GeminiViewImageTalk, "${selectedImageIndex}", Toast.LENGTH_SHORT)
+            Toast.makeText(this@GeminiViewImageTalkActivity, "${selectedImageIndex}", Toast.LENGTH_SHORT)
                 .show()
             promptEditText.setText("${selectedImageIndex}")
         }
@@ -88,21 +88,24 @@ class GeminiViewImageTalk : AppCompatActivity() {
         // 观察ViewModel的UI状态变化
         lifecycleScope.launchWhenStarted {
             bakingViewModel.uiState.collectLatest { uiState ->
-                Log.e("gemini", uiState.toString())
+//                Log.e("gemini", uiState.toString())
+                Log.d("gemini", "Current UI State: ${uiState}") // 添加这行
                 when (uiState) {
                     is UiState.Loading -> {
                         progressBar.visibility = View.VISIBLE
                         resultTextView.visibility = View.GONE
                         goButton.isEnabled = false // 禁用按钮防止重复点击
+                        resultTextView.text = "" // 清空之前的文本
                     }
 
                     is UiState.Success -> {
                         progressBar.visibility = View.GONE
                         resultTextView.visibility = View.VISIBLE
-                        resultTextView.text = uiState.outputText
+                        // !!! 关键更改：显示 currentText 而不是 outputText
+                        resultTextView.text = uiState.currentText
                         resultTextView.setTextColor(
                             ContextCompat.getColor(
-                                this@GeminiViewImageTalk, android.R.color.black
+                                this@GeminiViewImageTalkActivity, android.R.color.black
                             )
                         )
                         goButton.isEnabled = true
@@ -114,7 +117,7 @@ class GeminiViewImageTalk : AppCompatActivity() {
                         resultTextView.text = uiState.errorMessage
                         resultTextView.setTextColor(
                             ContextCompat.getColor(
-                                this@GeminiViewImageTalk, android.R.color.holo_red_dark
+                                this@GeminiViewImageTalkActivity, android.R.color.holo_red_dark
                             )
                         )
                         goButton.isEnabled = true
@@ -127,7 +130,7 @@ class GeminiViewImageTalk : AppCompatActivity() {
                         resultTextView.text = getString(R.string.results_placeholder)
                         resultTextView.setTextColor(
                             ContextCompat.getColor(
-                                this@GeminiViewImageTalk, android.R.color.black
+                                this@GeminiViewImageTalkActivity, android.R.color.black
                             )
                         )
                         goButton.isEnabled = true
