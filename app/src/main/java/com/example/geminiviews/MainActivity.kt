@@ -30,8 +30,11 @@ class MainActivity : AppCompatActivity() {
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                 .setAction("Action", null)
                 .setAnchorView(R.id.fab).show()
-            val intent = Intent(this, GeminiViewImageTalkActivity::class.java)
+            val intent = Intent(this, GeminiViewOldImageTalkActivity::class.java)
             startActivity(intent)
+
+            val intent2 = Intent(this, GeminiViewPromptTalkActivity::class.java)
+            startActivity(intent2)
         }
 
         val navHostFragment =

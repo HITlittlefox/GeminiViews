@@ -74,4 +74,13 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    // RecyclerView
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
+
+    // Markwon (用于Markdown渲染)
+    implementation("io.noties.markwon:core:4.6.2")
+    // 如果Gemini回复包含图片、表格等，可能需要更多Markwon模块
+    implementation("io.noties.markwon:image-coil:4.6.2")
+    implementation("io.noties.markwon:image-picasso:4.6.2")
 }
