@@ -37,4 +37,6 @@
 
     <string name="action_send">Send</string>
     <string name="welcome_message">Hello! How can I help you today?</string>
+    <string name="sender_you">you</string>
+    <string name="sender_gemini">Gemini</string>
 </resources>

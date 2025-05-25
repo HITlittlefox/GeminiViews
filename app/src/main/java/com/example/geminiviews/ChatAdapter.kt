@@ -2,7 +2,6 @@
 package com.example.geminiviews
 
 import android.graphics.Color
-import android.text.method.ScrollingMovementMethod
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -11,15 +10,21 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
-import io.noties.markwon.Markwon // 导入 Markwon
+import io.noties.markwon.Markwon
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class ChatAdapter(
-    private val messages: MutableList<ChatMessage>, private val markwon: Markwon // 接收 Markwon 实例
+    private val messages: MutableList<ChatMessage>, private val markwon: Markwon
 ) : RecyclerView.Adapter<ChatAdapter.ChatViewHolder>() {
 
+    private val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+    private val dateFormat = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault())
+
     class ChatViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val messageLayout: LinearLayout =
-            view.findViewById(R.id.messageLayout) // item_chat_message.xml 的根布局
+        val chatItemContainer: LinearLayout = view.findViewById(R.id.chat_item_container)
+        val senderInfoText: TextView = view.findViewById(R.id.senderInfoText) // 引用新的ID
         val messageText: TextView = view.findViewById(R.id.messageText)
     }
 
@@ -35,18 +40,18 @@ class ChatAdapter(
         // 设置消息文本并应用 Markdown
         markwon.setMarkdown(holder.messageText, message.content)
 
-        // !!! 新增：为 TextView 启用滚动 !!!
-        // 只有当文本过长时才启用滚动，并且需要设置 maxLines 或固定高度
-        // 如果你在 XML 中已经设置了 maxHeight 和 scrollbars="vertical"，通常不需要再加这一行
-        // 但如果文本量真的很大，Markwon可能会影响TextView的默认滚动行为，加上这一行会更保险。
-//        holder.messageText.movementMethod = ScrollingMovementMethod()
+        val containerLayoutParams =
+            holder.chatItemContainer.layoutParams as ViewGroup.MarginLayoutParams
+        val messageLayoutParams = holder.messageText.layoutParams as LinearLayout.LayoutParams
+        val senderInfoLayoutParams = holder.senderInfoText.layoutParams as LinearLayout.LayoutParams
 
-        // 根据发送者类型调整布局和背景
-        val layoutParams = holder.messageText.layoutParams as LinearLayout.LayoutParams
+        // 根据发送者类型调整整个消息项的 gravity
         when (message.sender) {
             SenderType.USER -> {
-                // 用户消息：右对齐，蓝色背景
-                layoutParams.gravity = Gravity.END
+                holder.chatItemContainer.gravity = Gravity.END // 整个容器右对齐
+                messageLayoutParams.gravity = Gravity.END // 消息气泡在容器内右对齐
+                senderInfoLayoutParams.gravity = Gravity.END // 信息文本在容器内右对齐
+
                 holder.messageText.background = ContextCompat.getDrawable(
                     holder.itemView.context, R.drawable.background_chat_bubble_user
                 )
@@ -54,24 +59,64 @@ class ChatAdapter(
             }
 
             SenderType.GEMINI -> {
-                // Gemini 消息：左对齐，灰色背景
-                layoutParams.gravity = Gravity.START
+                holder.chatItemContainer.gravity = Gravity.START // 整个容器左对齐
+                messageLayoutParams.gravity = Gravity.START // 消息气泡在容器内左对齐
+                senderInfoLayoutParams.gravity = Gravity.START // 信息文本在容器内左对齐
+
                 holder.messageText.background = ContextCompat.getDrawable(
                     holder.itemView.context, R.drawable.background_chat_bubble_gemini
                 )
-                holder.messageText.setTextColor(Color.BLACK) // Gemini消息文本颜色
+                holder.messageText.setTextColor(Color.BLACK)
             }
         }
-        holder.messageText.layoutParams = layoutParams
+        holder.messageText.layoutParams = messageLayoutParams // 确保更新 layoutParams
+        holder.senderInfoText.layoutParams = senderInfoLayoutParams // 确保更新 layoutParams
 
-        // 处理“正在打字”状态
-        if (message.isTyping) {
-            holder.messageText.alpha = 0.7f // 稍微透明一点
-            holder.messageText.text = "Gemini is typing..." // 显示打字提示
+        // !!! 设置发送者信息和时间戳 !!!
+        holder.senderInfoText.visibility = View.GONE // 默认隐藏
+
+        // 获取发送者名称字符串
+        val senderName = when (message.sender) {
+            SenderType.USER -> holder.itemView.context.getString(R.string.sender_you)
+            SenderType.GEMINI -> holder.itemView.context.getString(R.string.sender_gemini)
+        }
+
+        // 智能显示信息文本的逻辑
+        if (position == 0) { // 第一条消息总是显示
+            holder.senderInfoText.text = "$senderName ${formatTimestamp(message.timestamp)}"
+            holder.senderInfoText.visibility = View.VISIBLE
         } else {
-            holder.messageText.alpha = 1.0f // 完全不透明
+            val previousMessage = messages[position - 1]
+            // 如果与上一条消息的间隔超过 5 分钟，或者日期不同，或者发送者类型改变，则显示
+            val shouldDisplayInfo =
+                (message.timestamp - previousMessage.timestamp > 5 * 60 * 1000) || (!isSameDay(
+                    message.timestamp, previousMessage.timestamp
+                )) || (message.sender != previousMessage.sender) // 关键：如果发送者改变，也显示信息
+
+            if (shouldDisplayInfo) {
+                holder.senderInfoText.text = "$senderName ${formatTimestamp(message.timestamp)}"
+                holder.senderInfoText.visibility = View.VISIBLE
+            }
+        }
+
+        // 处理“正在打字”状态 (保持不变)
+        if (message.isTyping) {
+            holder.messageText.alpha = 0.7f // 使文本变淡
+            holder.messageText.text = "Gemini is typing..."
+        } else {
+            holder.messageText.alpha = 1.0f // 恢复正常透明度
         }
     }
 
     override fun getItemCount(): Int = messages.size
+
+    // 辅助函数：格式化时间戳
+    private fun formatTimestamp(timestamp: Long): String {
+        return timeFormat.format(Date(timestamp))
+    }
+
+    // 辅助函数：判断是否是同一天
+    private fun isSameDay(timestamp1: Long, timestamp2: Long): Boolean {
+        return dateFormat.format(Date(timestamp1)) == dateFormat.format(Date(timestamp2))
+    }
 }

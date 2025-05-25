@@ -2,6 +2,7 @@
 
 | 日期        | 需求                                                                        | 完成页面                            |
 |-----------|---------------------------------------------------------------------------|---------------------------------|
+| 2025.5.25 | Feat: Support sender and timestamp                                        | GeminiViewPromptTalkActivity.kt |
 | 2025.5.25 | Feat: Create a new page for dialogue with Gemini (bilateral bubbles).     | GeminiViewPromptTalkActivity.kt |
 | 2025.5.25 | Feat: Implemented the typewriter effect of regular text replies in Gemini | GeminiViewImageTalkActivity.kt  |
 | 2025.5.24 | gemini demo recreate                                                      | GeminiViewImageTalk.kt          |
