@@ -31,7 +31,8 @@
             android:theme="@style/Theme.GeminiViews.NoActionBar"></activity>
         <activity
             android:name=".GeminiViewPromptTalkActivity"
-            android:theme="@style/Theme.GeminiViews.NoActionBar"></activity>
+            android:theme="@style/Theme.GeminiViews.NoActionBar"
+            android:windowSoftInputMode="adjustResize"></activity>
     </application>
 
 </manifest>

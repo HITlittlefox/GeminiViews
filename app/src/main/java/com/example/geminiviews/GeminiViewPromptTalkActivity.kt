@@ -85,6 +85,7 @@ class GeminiViewPromptTalkActivity : AppCompatActivity() {
                                 )
                             )
                             chatAdapter.notifyItemInserted(chatMessages.size - 1)
+                            // !!! 在 Loading 状态下，如果添加了 typing 消息，滚动到底部
                             chatRecyclerView.scrollToPosition(chatMessages.size - 1)
                         }
                     }
@@ -107,13 +108,22 @@ class GeminiViewPromptTalkActivity : AppCompatActivity() {
                         // 否则，添加一条新的Gemini消息
                         if (uiState.currentText.isNotEmpty()) {
                             val lastMessage = chatMessages.lastOrNull()
-                            if (lastMessage != null && lastMessage.sender == SenderType.GEMINI && !lastMessage.isTyping) {
-                                // 如果是同一个回复的更新，并且内容不同于完整的最终内容，更新现有消息
-                                if (lastMessage.content != uiState.currentText) {
-                                    chatMessages[chatMessages.size - 1] =
-                                        ChatMessage(uiState.currentText, SenderType.GEMINI)
+                            // 确保 lastMessage 不为空且是 Gemini 消息，并且不是 typing 消息（typing 消息已移除）
+                            val isLastMessageGemini = lastMessage != null && lastMessage.sender == SenderType.GEMINI
+
+                            if (isLastMessageGemini) {
+                                if (lastMessage?.content != uiState.currentText) {
+                                    // 更新现有消息，时间戳保持不变或更新为当前时间
+                                    chatMessages[chatMessages.size - 1] = ChatMessage(
+                                        uiState.currentText,
+                                        SenderType.GEMINI,
+                                    ) // 确保时间戳保持
                                     chatAdapter.notifyItemChanged(chatMessages.size - 1)
-                                    chatRecyclerView.scrollToPosition(chatMessages.size - 1)
+
+                                    // !!! 智能滚动：只有当用户在底部附近时才自动滚动 !!!
+                                    if (!chatRecyclerView.canScrollVertically(1)) { // 如果不能向下滚动（即已经在底部）
+                                        chatRecyclerView.scrollToPosition(chatMessages.size - 1)
+                                    }
                                 }
                                 // 如果内容相同，说明是打字机效果的最后一次更新，不需要额外操作
                             } else {
@@ -124,7 +134,11 @@ class GeminiViewPromptTalkActivity : AppCompatActivity() {
                                     )
                                 )
                                 chatAdapter.notifyItemInserted(chatMessages.size - 1)
-                                chatRecyclerView.scrollToPosition(chatMessages.size - 1)
+
+                                // !!! 智能滚动：只有当用户在底部附近时才自动滚动 !!!
+                                if (!chatRecyclerView.canScrollVertically(1)) { // 如果不能向下滚动（即已经在底部）
+                                    chatRecyclerView.scrollToPosition(chatMessages.size - 1)
+                                }
                             }
                         }
                     }
@@ -149,6 +163,7 @@ class GeminiViewPromptTalkActivity : AppCompatActivity() {
                             )
                         )
                         chatAdapter.notifyItemInserted(chatMessages.size - 1)
+                        // !!! 错误消息也应该滚动到底部，确保用户看到错误提示
                         chatRecyclerView.scrollToPosition(chatMessages.size - 1)
                     }
 
@@ -156,11 +171,6 @@ class GeminiViewPromptTalkActivity : AppCompatActivity() {
                         progressBar.visibility = View.GONE
                         sendMessageButton.isEnabled = true
                         messageEditText.isEnabled = true
-                        // 初始状态下可以添加一个欢迎消息
-                        // if (chatMessages.isEmpty()) {
-                        //    chatMessages.add(ChatMessage(getString(R.string.welcome_message), SenderType.GEMINI))
-                        //    chatAdapter.notifyItemInserted(0)
-                        // }
                     }
                 }
             }
@@ -173,19 +183,13 @@ class GeminiViewPromptTalkActivity : AppCompatActivity() {
             // 1. 添加用户消息到列表
             chatMessages.add(ChatMessage(prompt, SenderType.USER))
             chatAdapter.notifyItemInserted(chatMessages.size - 1)
-            chatRecyclerView.scrollToPosition(chatMessages.size - 1) // 滚动到底部
+            // !!! 用户发送消息时，总是滚动到底部 !!!
+            chatRecyclerView.scrollToPosition(chatMessages.size - 1)
 
-            // 2. 清空输入框
             messageEditText.text.clear()
-
-            // 3. 发送请求到ViewModel (只传递文本)
             bakingViewModel.sendPrompt(prompt)
         } else {
             Toast.makeText(this, "Please enter a message.", Toast.LENGTH_SHORT).show()
         }
     }
-
-    // 彻底移除 ImageAdapter 和 dpToPx 辅助函数
-    // inner class ImageAdapter(...) { ... }
-    // private fun Int.dpToPx(): Int { ... }
 }
