@@ -22,7 +22,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.geminiviews.prompttalk.talkinterface.UiState
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.InternalSerializationApi
 
+@OptIn(
+    InternalSerializationApi::class, ExperimentalSerializationApi::class
+) // @OptIn 注解，解决 opt-in 警告
 class GeminiViewOldImageTalkActivity : AppCompatActivity() {
 
     private lateinit var bakingViewModel: BakingViewModel
@@ -71,8 +76,9 @@ class GeminiViewOldImageTalkActivity : AppCompatActivity() {
             selectedImageIndex = position
             // 当图片被选中时，通知Adapter刷新以更新边框
             imageRecyclerView.adapter?.notifyDataSetChanged()
-            Toast.makeText(this@GeminiViewOldImageTalkActivity, "${selectedImageIndex}", Toast.LENGTH_SHORT)
-                .show()
+            Toast.makeText(
+                this@GeminiViewOldImageTalkActivity, "${selectedImageIndex}", Toast.LENGTH_SHORT
+            ).show()
             promptEditText.setText("${selectedImageIndex}")
         }
         imageRecyclerView.adapter = imageAdapter

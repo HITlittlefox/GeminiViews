@@ -1,12 +1,13 @@
 ## ✅ 当前已完成特性
 
-| 日期        | 需求                                                                        | 完成页面                            |
-|-----------|---------------------------------------------------------------------------|---------------------------------|
-| 2025.5.25 | Feat: Support sender and timestamp                                        | GeminiViewPromptTalkActivity.kt |
-| 2025.5.25 | Feat: Create a new page for dialogue with Gemini (bilateral bubbles).     | GeminiViewPromptTalkActivity.kt |
-| 2025.5.25 | Feat: Implemented the typewriter effect of regular text replies in Gemini | GeminiViewImageTalkActivity.kt  |
-| 2025.5.24 | gemini demo recreate                                                      | GeminiViewImageTalk.kt          |
-| 2025.5.23 | Android studio create empty view                                          | MainActivity.kt                 |
+| 日期        | 需求                                                                        | 完成页面                                           |
+|-----------|---------------------------------------------------------------------------|------------------------------------------------|
+| 2025.5.25 | Feat:Send specific Prompt to trigger JSON generation and parsing logic    | GeminiViewPromptTalkActivity.kt, JsonSchema.kt | 
+| 2025.5.25 | Feat: Support sender and timestamp                                        | GeminiViewPromptTalkActivity.kt                |
+| 2025.5.25 | Feat: Create a new page for dialogue with Gemini (bilateral bubbles).     | GeminiViewPromptTalkActivity.kt                |
+| 2025.5.25 | Feat: Implemented the typewriter effect of regular text replies in Gemini | GeminiViewImageTalkActivity.kt                 |
+| 2025.5.24 | gemini demo recreate                                                      | GeminiViewImageTalk.kt                         |
+| 2025.5.23 | Android studio create empty view                                          | MainActivity.kt                                |
 
 ---
 

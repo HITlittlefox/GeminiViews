@@ -21,8 +21,13 @@ import com.example.geminiviews.prompttalk.adapter.ChatAdapter
 import com.example.geminiviews.prompttalk.viewmodel.TalkViewModel
 import kotlinx.coroutines.flow.collectLatest
 import io.noties.markwon.Markwon
-import io.noties.markwon.ext.tables.TablePlugin
+import io.noties.markwon.ext.tables.TablePlugin // 如果你使用了表格插件，保留这个导入
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.InternalSerializationApi
 
+@OptIn(
+    InternalSerializationApi::class, ExperimentalSerializationApi::class
+) // @OptIn 注解，解决 opt-in 警告
 class GeminiViewPromptTalkActivity : AppCompatActivity() {
 
     private lateinit var talkViewModel: TalkViewModel
@@ -39,13 +44,10 @@ class GeminiViewPromptTalkActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main_gemini_image)
+        setContentView(R.layout.activity_main_gemini_image) // 确认你的布局文件名称
 
         markwon = Markwon.builder(this)
-//            .usePlugin(
-//            TablePlugin.create(this), // 添加表格插件
-            // ... 其他你需要的插件
-//        )
+            // .usePlugin(TablePlugin.create(this)) // 如果需要表格支持，取消注释
             .build()
 
         talkViewModel = ViewModelProvider(this).get(TalkViewModel::class.java)
@@ -55,9 +57,9 @@ class GeminiViewPromptTalkActivity : AppCompatActivity() {
         sendMessageButton = findViewById(R.id.sendMessageButton)
         chatRecyclerView = findViewById(R.id.chatRecyclerView)
         progressBar = findViewById(R.id.progressBar)
-        val titleTextView: TextView = findViewById(R.id.titleTextView)
+        val titleTextView: TextView = findViewById(R.id.titleTextView) // 确保你的布局中有这个ID
 
-        titleTextView.text = getString(R.string.baking_title)
+        titleTextView.text = getString(R.string.baking_title) // 确保你的 string 资源有 baking_title
 
         // 设置聊天RecyclerView的Adapter
         chatAdapter = ChatAdapter(chatMessages, markwon)
@@ -109,50 +111,53 @@ class GeminiViewPromptTalkActivity : AppCompatActivity() {
                         messageEditText.isEnabled = true
 
                         // 移除“正在打字”的消息（如果存在）
-                        val typingMessageIndex =
-                            chatMessages.indexOfFirst { it.sender == SenderType.GEMINI && it.isTyping }
+                        // 使用 indexOfLast 找到最后一条打字消息，更稳妥
+                        val typingMessageIndex = chatMessages.indexOfLast { it.isTyping }
                         if (typingMessageIndex != -1) {
                             chatMessages.removeAt(typingMessageIndex)
                             chatAdapter.notifyItemRemoved(typingMessageIndex)
                         }
 
-                        // 更新或添加Gemini的回复
-                        // 逻辑：如果最后一条消息是Gemini的（且不是正在打字的消息），则更新它
-                        // 否则，添加一条新的Gemini消息
+                        // 查找最后一条非 typing 的 Gemini 消息的索引
+                        val lastGeminiMessageIndex =
+                            chatMessages.indexOfLast { it.sender == SenderType.GEMINI && !it.isTyping }
+
+                        // 核心逻辑：判断是添加新消息还是更新现有消息
+                        // 只有当 currentText 不为空时才处理消息更新/添加，因为空字符串通常不是有效回复
                         if (uiState.currentText.isNotEmpty()) {
-                            val lastMessage = chatMessages.lastOrNull()
-                            // 确保 lastMessage 不为空且是 Gemini 消息，并且不是 typing 消息（typing 消息已移除）
-                            val isLastMessageGemini = lastMessage != null && lastMessage.sender == SenderType.GEMINI
-
-                            if (isLastMessageGemini) {
-                                if (lastMessage?.content != uiState.currentText) {
-                                    // 更新现有消息，时间戳保持不变或更新为当前时间
-                                    chatMessages[chatMessages.size - 1] = ChatMessage(
-                                        uiState.currentText,
-                                        SenderType.GEMINI,
-                                    ) // 确保时间戳保持
-                                    chatAdapter.notifyItemChanged(chatMessages.size - 1)
-
-                                    // !!! 智能滚动：只有当用户在底部附近时才自动滚动 !!!
-                                    if (!chatRecyclerView.canScrollVertically(1)) { // 如果不能向下滚动（即已经在底部）
-                                        chatRecyclerView.scrollToPosition(chatMessages.size - 1)
-                                    }
-                                }
-                                // 如果内容相同，说明是打字机效果的最后一次更新，不需要额外操作
-                            } else {
-                                // 添加一条新的Gemini消息 (或在Initial状态添加欢迎语)
+                            // 如果是打字机效果的第一次更新，或者没有上一条 Gemini 消息，就添加新消息
+                            if (lastGeminiMessageIndex == -1 || chatMessages[lastGeminiMessageIndex].content == uiState.outputText) {
+                                // 添加新消息
                                 chatMessages.add(
                                     ChatMessage(
-                                        uiState.currentText, SenderType.GEMINI
+                                        content = uiState.currentText,
+                                        sender = SenderType.GEMINI,
+                                        petList = uiState.petList // !!! 关键：将 petList 传递给新消息 !!!
                                     )
                                 )
                                 chatAdapter.notifyItemInserted(chatMessages.size - 1)
-
-                                // !!! 智能滚动：只有当用户在底部附近时才自动滚动 !!!
-                                if (!chatRecyclerView.canScrollVertically(1)) { // 如果不能向下滚动（即已经在底部）
-                                    chatRecyclerView.scrollToPosition(chatMessages.size - 1)
+                            } else {
+                                // 否则，更新现有消息 (打字机效果进行中)
+                                val existingMessage = chatMessages[lastGeminiMessageIndex]
+                                // 仅当内容发生变化时才更新，避免不必要的 UI 刷新
+                                if (existingMessage.content != uiState.currentText) {
+                                    existingMessage.content = uiState.currentText
+                                    // 只有当 currentText 达到 outputText 时，才更新 petList
+                                    // 这确保了 petList 仅在最终的完整回复时被设置，避免在打字过程中频繁替换对象
+                                    if (uiState.currentText == uiState.outputText) {
+                                        chatMessages[lastGeminiMessageIndex] = existingMessage.copy(
+                                            petList = uiState.petList // !!! 关键：将 petList 传递给最终更新的消息 !!!
+                                        )
+                                    }
+                                    chatAdapter.notifyItemChanged(lastGeminiMessageIndex)
                                 }
                             }
+                        }
+
+                        // 智能滚动：只有当用户在底部附近时才自动滚动
+                        // 如果不能向下滚动（即已经在底部）
+                        if (!chatRecyclerView.canScrollVertically(1)) {
+                            chatRecyclerView.scrollToPosition(chatMessages.size - 1)
                         }
                     }
 
@@ -163,7 +168,7 @@ class GeminiViewPromptTalkActivity : AppCompatActivity() {
 
                         // 移除“正在打字”的消息（如果存在）
                         val typingMessageIndex =
-                            chatMessages.indexOfFirst { it.sender == SenderType.GEMINI && it.isTyping }
+                            chatMessages.indexOfLast { it.isTyping } // 使用 indexOfLast，更稳妥地找到最新的打字消息
                         if (typingMessageIndex != -1) {
                             chatMessages.removeAt(typingMessageIndex)
                             chatAdapter.notifyItemRemoved(typingMessageIndex)

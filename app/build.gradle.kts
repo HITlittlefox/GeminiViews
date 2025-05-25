@@ -4,6 +4,7 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.0" // <--- Add the version here
 }
 
 android {
@@ -101,4 +102,9 @@ dependencies {
 //    implementation("io.noties.markwon:recycler-table:4.6.2")
 //    implementation("io.noties.markwon:simple-ext:4.6.2")
 //    implementation("io.noties.markwon:syntax-highlight:4.6.2")
+
+
+    // kotlinx.serialization 核心库
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0") // 检查Maven Central获取最新版本
+
 }
