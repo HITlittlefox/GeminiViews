@@ -10,7 +10,7 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.geminiviews.prompttalk.data.ChatMessage
-import com.example.geminiviews.R
+import com.example.geminiviews.R // 确保 R 导入正确
 import com.example.geminiviews.prompttalk.data.SenderType
 import com.example.geminiviews.prompttalk.data.Pet
 import io.noties.markwon.Markwon
@@ -27,7 +27,6 @@ class ChatAdapter(
     private val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
     private val dateFormat = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault())
 
-    // ChatViewHolder 类保持不变
     class ChatViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val chatItemContainer: LinearLayout = view.findViewById(R.id.chat_item_container)
         val senderInfoText: TextView = view.findViewById(R.id.senderInfoText)
@@ -45,28 +44,84 @@ class ChatAdapter(
     override fun onBindViewHolder(holder: ChatViewHolder, position: Int) {
         val message = messages[position]
 
-        // 1. 处理发送者和时间信息
-        handleSenderInfo(holder, message, position)
+        // 处理“正在打字”状态优先
+        if (message.isTyping) {
+            holder.messageText.alpha = 0.7f // 使文本变淡
+            holder.messageText.text = "Gemini is typing..." // 直接设置文本
+            holder.petListTextView.visibility = View.GONE // 正在打字时隐藏宠物列表
+        } else {
+            // 不是“正在打字”状态时才渲染 Markdown
+            holder.messageText.alpha = 1.0f // 恢复正常透明度
+            if (message.content.isNotEmpty()) {
+                markwon.setMarkdown(holder.messageText, message.content)
+            } else {
+                holder.messageText.text = "" // 如果内容为空，则清空
+            }
 
-        // 2. 根据消息类型处理内容显示
-        when {
-            message.isTyping -> handleTypingMessage(holder)
-            message.petList != null && message.petList.pets.isNotEmpty() -> handlePetListMessage(
-                holder, message.petList.pets
-            )
-
-            else -> handleTextMessage(holder, message.content)
+            // 处理宠物列表显示 (仅当不是“正在打字”状态时才显示)
+            if (message.petList != null && message.petList!!.pets.isNotEmpty()) {
+                holder.petListTextView.visibility = View.VISIBLE
+                val petsText = message.petList!!.pets.joinToString("\n") { pet ->
+                    " - 类型: ${pet.type}, 名字: ${pet.name}, 爱好: ${pet.hobby}"
+                }
+                holder.petListTextView.text = "宠物列表:\n$petsText"
+            } else {
+                holder.petListTextView.visibility = View.GONE
+            }
         }
 
-        // 3. 设置气泡背景和文本颜色
-        setBubbleStyle(holder, message.sender)
-    }
+        // --- 核心修改：调整 messageBubble 和 senderInfoText 的 gravity ---
+        // 获取 message_bubble 的 LayoutParams
+        val messageBubbleLayoutParams =
+            holder.messageBubble.layoutParams as LinearLayout.LayoutParams
+        // 获取 senderInfoText 的 LayoutParams
+        val senderInfoTextLayoutParams =
+            holder.senderInfoText.layoutParams as LinearLayout.LayoutParams
 
-    override fun getItemCount(): Int = messages.size
+        when (message.sender) {
+            SenderType.USER -> {
+                messageBubbleLayoutParams.gravity = Gravity.END
+                senderInfoTextLayoutParams.gravity = Gravity.END // !!! 让 senderInfoText 靠右 !!!
+                holder.messageBubble.background = ContextCompat.getDrawable(
+                    holder.itemView.context, R.drawable.chat_bubble_user
+                )
+                holder.messageText.setTextColor(
+                    ContextCompat.getColor(
+                        holder.itemView.context, android.R.color.white
+                    )
+                )
+                holder.petListTextView.setTextColor(
+                    ContextCompat.getColor(
+                        holder.itemView.context, android.R.color.white
+                    )
+                )
+            }
 
-    // --- 辅助函数：处理不同类型的消息显示逻辑 ---
+            SenderType.GEMINI -> {
+                messageBubbleLayoutParams.gravity = Gravity.START
+                senderInfoTextLayoutParams.gravity = Gravity.START // !!! 让 senderInfoText 靠左 !!!
+                holder.messageBubble.background = ContextCompat.getDrawable( // <-- 修正此处
+                    holder.itemView.context, R.drawable.chat_bubble_gemini
+                )
+                holder.messageText.setTextColor(
+                    ContextCompat.getColor(
+                        holder.itemView.context, android.R.color.black
+                    )
+                )
+                holder.petListTextView.setTextColor(
+                    ContextCompat.getColor(
+                        holder.itemView.context, android.R.color.black
+                    )
+                )
+            }
+        }
+        // 应用新的 LayoutParams 到 message_bubble
+        holder.messageBubble.layoutParams = messageBubbleLayoutParams
+        // !!! 应用新的 LayoutParams 到 senderInfoText !!!
+        holder.senderInfoText.layoutParams = senderInfoTextLayoutParams
 
-    private fun handleSenderInfo(holder: ChatViewHolder, message: ChatMessage, position: Int) {
+
+        // 处理 senderInfoText 的显示逻辑 (保持不变)
         val senderName = getSenderName(message.sender)
         if (position == 0) {
             holder.senderInfoText.text = "$senderName ${formatTimestamp(message.timestamp)}"
@@ -87,76 +142,9 @@ class ChatAdapter(
         }
     }
 
-    private fun handleTypingMessage(holder: ChatViewHolder) {
-        holder.messageText.alpha = 0.7f
-        holder.messageText.text = "Gemini is typing..."
-        holder.messageText.visibility = View.VISIBLE
-        holder.petListTextView.visibility = View.GONE
-        // 隐藏其他可能存在的视图，例如图片 ImageView
-        // holder.messageImage?.visibility = View.GONE
-    }
+    override fun getItemCount(): Int = messages.size
 
-    private fun handlePetListMessage(holder: ChatViewHolder, pets: List<Pet>) {
-        holder.messageText.visibility = View.GONE // 隐藏普通文本
-        holder.petListTextView.visibility = View.VISIBLE // 显示宠物列表 TextView
-        // holder.messageImage?.visibility = View.GONE // 隐藏其他视图
-
-        val petListString = StringBuilder("宠物列表：\n")
-        pets.forEach { pet ->
-            petListString.append("- ${pet.type}：${pet.name} (爱好：${pet.hobby})\n")
-        }
-        holder.petListTextView.text = petListString.toString().trim()
-    }
-
-    private fun handleTextMessage(holder: ChatViewHolder, content: String) {
-        holder.messageText.alpha = 1.0f
-        holder.messageText.visibility = View.VISIBLE // 确保文本可见
-        holder.petListTextView.visibility = View.GONE // 隐藏宠物列表
-        // holder.messageImage?.visibility = View.GONE // 隐藏其他视图
-
-        markwon.setMarkdown(holder.messageText, content)
-    }
-
-    private fun setBubbleStyle(holder: ChatViewHolder, senderType: SenderType) {
-        val layoutParams = holder.messageBubble.layoutParams as LinearLayout.LayoutParams
-        when (senderType) {
-            SenderType.USER -> {
-                layoutParams.gravity = Gravity.END
-                holder.messageBubble.background =
-                    ContextCompat.getDrawable(holder.itemView.context, R.drawable.chat_bubble_user)
-                holder.messageText.setTextColor(
-                    ContextCompat.getColor(
-                        holder.itemView.context, android.R.color.white
-                    )
-                )
-                holder.petListTextView.setTextColor(
-                    ContextCompat.getColor(
-                        holder.itemView.context, android.R.color.white
-                    )
-                )
-            }
-
-            SenderType.GEMINI -> {
-                layoutParams.gravity = Gravity.START
-                holder.messageBubble.background = ContextCompat.getDrawable(
-                    holder.itemView.context, R.drawable.chat_bubble_gemini
-                )
-                holder.messageText.setTextColor(
-                    ContextCompat.getColor(
-                        holder.itemView.context, android.R.color.black
-                    )
-                )
-                holder.petListTextView.setTextColor(
-                    ContextCompat.getColor(
-                        holder.itemView.context, android.R.color.black
-                    )
-                )
-            }
-        }
-        holder.messageBubble.layoutParams = layoutParams
-    }
-
-    // --- 辅助格式化函数 (保持不变) ---
+    // ... (辅助函数保持不变)
     private fun formatTimestamp(timestamp: Long): String {
         return timeFormat.format(Date(timestamp))
     }

@@ -1,3 +1,4 @@
+// UiState.kt
 package com.example.geminiviews.prompttalk.talkinterface
 
 import com.example.geminiviews.prompttalk.data.PetListResponse
@@ -27,8 +28,8 @@ sealed interface UiState {
      */
     @InternalSerializationApi
     data class Success(
-        val outputText: String,
-        val currentText: String = "",
+        val outputText: String, // AI完整的响应文本
+        val currentText: String = "", // 打字机效果当前显示的文本
         val petList: PetListResponse? = null // !!! 新增：用于存储解析后的宠物列表 !!!
     ) : UiState
 

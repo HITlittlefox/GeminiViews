@@ -72,4 +72,15 @@ object Logger {
             Log.v(tag, message)
         }
     }
+
+    /**
+     * 打印断言日志
+     * @param message 要打印的消息
+     * @param tag 日志标签，默认为 DEFAULT_TAG
+     */
+    fun wtf(message: String?, tag: String = DEFAULT_TAG) {
+        if (DEBUG_MODE && message != null) {
+            Log.wtf(tag, message)
+        }
+    }
 }

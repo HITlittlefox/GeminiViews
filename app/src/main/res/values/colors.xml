@@ -11,4 +11,7 @@
     <color name="material_dynamic_primary40">#FF6200EE</color>
     <color name="material_dynamic_neutral60">#FFCCCCCC</color>
 
+    <color name="colorPrimary">#6200EE</color>
+    <color name="colorPrimaryDark">#3700B3</color>
+    <color name="colorAccent">#03DAC5</color>
 </resources>

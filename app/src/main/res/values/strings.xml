@@ -39,4 +39,8 @@
     <string name="welcome_message">Hello! How can I help you today?</string>
     <string name="sender_you">you</string>
     <string name="sender_gemini">Gemini</string>
+
+
+    <string name="send_button_send_text">发送</string>
+    <string name="send_button_stop_text">停止</string>
 </resources>
