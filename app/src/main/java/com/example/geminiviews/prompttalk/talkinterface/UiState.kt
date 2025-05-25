@@ -1,4 +1,4 @@
-package com.example.geminiviews
+package com.example.geminiviews.prompttalk.talkinterface
 
 /**
  * A sealed hierarchy describing the state of the text generation.

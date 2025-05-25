@@ -76,11 +76,29 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
 
     // RecyclerView
-    implementation("androidx.recyclerview:recyclerview:1.3.2")
+//    implementation("androidx.recyclerview:recyclerview:1.3.2")
 
     // Markwon (用于Markdown渲染)
     implementation("io.noties.markwon:core:4.6.2")
     // 如果Gemini回复包含图片、表格等，可能需要更多Markwon模块
     implementation("io.noties.markwon:image-coil:4.6.2")
     implementation("io.noties.markwon:image-picasso:4.6.2")
+
+//    implementation("io.noties.markwon:core:4.6.2")
+//    implementation("io.noties.markwon:editor:4.6.2")
+//    implementation("io.noties.markwon:ext-latex:4.6.2")
+//    implementation("io.noties.markwon:ext-strikethrough:4.6.2")
+    implementation("io.noties.markwon:ext-tables:4.6.2")
+//    implementation("io.noties.markwon:ext-tasklist:4.6.2")
+//    implementation("io.noties.markwon:html:4.6.2")
+//    implementation("io.noties.markwon:image:4.6.2")
+//    implementation("io.noties.markwon:image-coil:4.6.2")
+//    implementation("io.noties.markwon:image-glide:4.6.2")
+//    implementation("io.noties.markwon:image-picasso:4.6.2")
+//    implementation("io.noties.markwon:inline-parser:4.6.2")
+//    implementation("io.noties.markwon:linkify:4.6.2")
+//    implementation("io.noties.markwon:recycler:4.6.2")
+//    implementation("io.noties.markwon:recycler-table:4.6.2")
+//    implementation("io.noties.markwon:simple-ext:4.6.2")
+//    implementation("io.noties.markwon:syntax-highlight:4.6.2")
 }

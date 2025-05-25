@@ -1,4 +1,4 @@
-package com.example.geminiviews
+package com.example.geminiviews.prompttalk.utils
 
 // Logger.kt
 

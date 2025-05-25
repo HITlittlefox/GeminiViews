@@ -1,4 +1,4 @@
-package com.example.geminiviews
+package com.example.geminiviews.prompttalk.view
 
 import android.os.Bundle
 import android.view.View
@@ -12,12 +12,20 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.geminiviews.prompttalk.data.ChatMessage
+import com.example.geminiviews.prompttalk.utils.Logger
+import com.example.geminiviews.R
+import com.example.geminiviews.prompttalk.data.SenderType
+import com.example.geminiviews.prompttalk.talkinterface.UiState
+import com.example.geminiviews.prompttalk.adapter.ChatAdapter
+import com.example.geminiviews.prompttalk.viewmodel.TalkViewModel
 import kotlinx.coroutines.flow.collectLatest
 import io.noties.markwon.Markwon
+import io.noties.markwon.ext.tables.TablePlugin
 
 class GeminiViewPromptTalkActivity : AppCompatActivity() {
 
-    private lateinit var bakingViewModel: BakingViewModel
+    private lateinit var talkViewModel: TalkViewModel
     private lateinit var messageEditText: EditText
     private lateinit var sendMessageButton: Button
     private lateinit var chatRecyclerView: RecyclerView
@@ -33,9 +41,14 @@ class GeminiViewPromptTalkActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main_gemini_image)
 
-        markwon = Markwon.builder(this).build()
+        markwon = Markwon.builder(this)
+//            .usePlugin(
+//            TablePlugin.create(this), // 添加表格插件
+            // ... 其他你需要的插件
+//        )
+            .build()
 
-        bakingViewModel = ViewModelProvider(this).get(BakingViewModel::class.java)
+        talkViewModel = ViewModelProvider(this).get(TalkViewModel::class.java)
 
         // 绑定XML视图组件
         messageEditText = findViewById(R.id.messageEditText)
@@ -68,7 +81,7 @@ class GeminiViewPromptTalkActivity : AppCompatActivity() {
 
         // 观察ViewModel的UI状态变化
         lifecycleScope.launchWhenStarted {
-            bakingViewModel.uiState.collectLatest { uiState ->
+            talkViewModel.uiState.collectLatest { uiState ->
                 Logger.d("Current UI State: ${uiState}")
                 when (uiState) {
                     is UiState.Loading -> {
@@ -187,7 +200,7 @@ class GeminiViewPromptTalkActivity : AppCompatActivity() {
             chatRecyclerView.scrollToPosition(chatMessages.size - 1)
 
             messageEditText.text.clear()
-            bakingViewModel.sendPrompt(prompt)
+            talkViewModel.sendPrompt(prompt)
         } else {
             Toast.makeText(this, "Please enter a message.", Toast.LENGTH_SHORT).show()
         }

@@ -1,5 +1,5 @@
 // ChatAdapter.kt
-package com.example.geminiviews
+package com.example.geminiviews.prompttalk.adapter
 
 import android.graphics.Color
 import android.view.Gravity
@@ -10,6 +10,9 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
+import com.example.geminiviews.prompttalk.data.ChatMessage
+import com.example.geminiviews.R
+import com.example.geminiviews.prompttalk.data.SenderType
 import io.noties.markwon.Markwon
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -99,12 +102,14 @@ class ChatAdapter(
             }
         }
 
-        // 处理“正在打字”状态 (保持不变)
+        // 处理“正在打字”状态
         if (message.isTyping) {
             holder.messageText.alpha = 0.7f // 使文本变淡
-            holder.messageText.text = "Gemini is typing..."
+            holder.messageText.text = "Gemini is typing..." // 显示打字提示
         } else {
             holder.messageText.alpha = 1.0f // 恢复正常透明度
+            // 设置消息文本并应用 Markdown
+//            markwon.setMarkdown(holder.messageText, message.content) // 只有当不是打字状态时才渲染 Markdown
         }
     }
 

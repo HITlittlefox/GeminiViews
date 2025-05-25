@@ -14,6 +14,7 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import androidx.appcompat.app.AppCompatActivity
 import com.example.geminiviews.databinding.ActivityMainBinding
+import com.example.geminiviews.prompttalk.view.GeminiViewPromptTalkActivity
 
 class MainActivity : AppCompatActivity() {
 

@@ -1,5 +1,5 @@
 // ChatMessage.kt
-package com.example.geminiviews
+package com.example.geminiviews.prompttalk.data
 
 enum class SenderType {
     USER, GEMINI

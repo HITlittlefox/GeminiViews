@@ -20,6 +20,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.geminiviews.prompttalk.talkinterface.UiState
 import kotlinx.coroutines.flow.collectLatest
 
 class GeminiViewOldImageTalkActivity : AppCompatActivity() {

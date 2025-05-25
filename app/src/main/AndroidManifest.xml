@@ -30,7 +30,7 @@
             android:name=".GeminiViewOldImageTalkActivity"
             android:theme="@style/Theme.GeminiViews.NoActionBar"></activity>
         <activity
-            android:name=".GeminiViewPromptTalkActivity"
+            android:name=".prompttalk.view.GeminiViewPromptTalkActivity"
             android:theme="@style/Theme.GeminiViews.NoActionBar"
             android:windowSoftInputMode="adjustResize"></activity>
     </application>
